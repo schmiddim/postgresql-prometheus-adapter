@@ -50,7 +50,7 @@ import (
 
 	//"github.com/prometheus/client_model/go"
 	"github.com/prometheus/common/model"
-	"gopkg.in/alecthomas/kingpin.v2"
+	"github.com/alecthomas/kingpin/v2"
 	//"flag"
 )
 
@@ -199,6 +199,7 @@ func parseFlags() *config {
 	a.Flag("web-listen-address", "Address to listen on for web endpoints.").Default(":9201").StringVar(&cfg.listenAddr)
 	a.Flag("web-telemetry-path", "Address to listen on for web endpoints.").Default("/metrics").StringVar(&cfg.telemetryPath)
 	flag.AddFlags(a, &cfg.promlogConfig)
+	
 
 	a.Flag("pg-partition", "daily or hourly partitions, default: hourly").Default("hourly").StringVar(&cfg.pgPrometheusConfig.PartitionScheme)
 	a.Flag("pg-commit-secs", "Write data to database every N seconds").Default("15").IntVar(&cfg.pgPrometheusConfig.CommitSecs)

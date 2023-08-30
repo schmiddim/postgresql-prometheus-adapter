@@ -11,12 +11,25 @@ services:
     volumes: 
       - db:/var/lib/postgresql/data
   postgresql_exporter:
-    image: schmiddim/postgresql-prometheus-adapter:1.0
+    image: schmiddim/postgresql-prometheus-adapter:1.2.0
     restart: always
     environment: 
       DATABASE_URL: "user=postgres password=postgres host=db port=5432 database=postgres"
     ports: 
       - "9201:9201"
+    depends_on: 
+      - db
+  adminer:
+    image: adminer
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - 8080:8080
+    depends_on: 
+      - db
 volumes:
   db:
     driver: local
