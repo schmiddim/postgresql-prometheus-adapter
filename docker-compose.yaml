@@ -9,8 +9,8 @@ services:
     ports:
       - '5432:5432'
     volumes: 
-      - db:/var/lib/postgresql/data
-  postgresql_exporter:
+      - ./docker-compose/postgres-data/:/var/lib/postgresql/data
+  postgresql-prometheus-adapter:
     image: schmiddim/postgresql-prometheus-adapter:v1.2.0
     restart: always
     environment: 
@@ -30,6 +30,39 @@ services:
       - 8080:8080
     depends_on: 
       - db
-volumes:
-  db:
-    driver: local
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_WTF_CSRF_CHECK_DEFAULT: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      - ./docker-compose/pgadmin:/var/lib/pgadmin
+    depends_on: 
+      - db
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - ./docker-compose/prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - 9090:9090
+    restart: always
+  # avalance: 
+  #   image: quay.io/prometheuscommunity/avalanche:main
+  #   command:
+  #     - --remote-url="http://postgresql-prometheus-adapter:9201/write"
+  #     - --metric-count=10 
+  #     - --label-count=15 
+  #     - --series-count=30 
+  #     - --remote-requests-count=100 
+  #     - --remote-write-interval=1000ms
+
