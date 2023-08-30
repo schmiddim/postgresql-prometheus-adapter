@@ -35,6 +35,12 @@ make container
 
 ## Running
 
+### Docker Compose 
+```shell
+docker-compose up
+chmod 777 -R docker-compose
+```
+
 ### Running adapter
 
 ```shell
@@ -82,24 +88,9 @@ Flags:
 ```
 :point_right: Note: pg_commit_secs and pg_commit_rows controls when data rows will be flushed to database. First one to reach threshold will trigger the flush.
 
-### Container
+### Prometheus Config
+modify prometheus/prometheus.yml
 
-#### Run container
-
-```shell
-podman run --rm \
-  --name postgresql-prometheus-adapter \
-  -p 9201:9201 \
-  -e DATABASE_URL="user=testuser password=test123 host=192.168.12.36 port=5432 database=testdb" \
-  --detach \
-  crunchydata/postgresql-prometheus-adapterl:latest
-  ```
-
-#### Stop container
-
-```shell
-podman stop postgresql-prometheus-adapter
-```
 
 #### Adapter ENV
 
