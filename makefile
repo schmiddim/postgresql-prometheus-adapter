@@ -14,15 +14,6 @@ build: $(TARGET)
 $(TARGET): main.go $(SOURCES)
 	go build -ldflags="-X 'main.Version=${VERSION}'" -o $(TARGET)
 
-container: $(TARGET) Dockerfile
-	@#podman rmi $(ORGANIZATION)/$(TARGET):latest $(ORGANIZATION)/$(TARGET):$(VERSION)
-	podman build -t $(ORGANIZATION)/$(TARGET):latest .
-	podman tag $(ORGANIZATION)/$(TARGET):latest $(ORGANIZATION)/$(TARGET):$(VERSION)
-
-container-save: container
-	rm -f $(TARGET)-$(VERSION).tar
-	podman save --output=$(TARGET)-$(VERSION).tar $(ORGANIZATION)/$(TARGET):$(VERSION)
-
 clean:
 	rm -f *~ $(TARGET)
 
