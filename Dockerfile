@@ -1,6 +1,7 @@
 FROM centos:7
 
-MAINTAINER Yogesh Sharma <Yogesh.Sharma@CrunchyData.com>
+LABEL org.opencontainers.image.authors="schmiddim@gmx.at"
+
 
 COPY postgresql-prometheus-adapter start.sh /
 
