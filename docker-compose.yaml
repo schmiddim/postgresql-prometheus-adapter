@@ -11,7 +11,7 @@ services:
     volumes: 
       - db:/var/lib/postgresql/data
   postgresql_exporter:
-    image: schmiddim/postgresql-prometheus-adapter:1.2.0
+    image: schmiddim/postgresql-prometheus-adapter:v1.2.0
     restart: always
     environment: 
       DATABASE_URL: "user=postgres password=postgres host=db port=5432 database=postgres"
