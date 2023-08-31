@@ -224,7 +224,8 @@ func NewClient(logger log.Logger, cfg *Config) *Client {
 
 	conn1, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error: Unable to connect to database using DATABASE_URL=", os.Getenv("DATABASE_URL"))
+		fmt.Fprintln(os.Stderr, "Error: Unable to connect to database using DATABASE_URL=", os.Getenv("DATABASE_URL"), "Error() ", err.Error())
+
 		os.Exit(1)
 	}
 
