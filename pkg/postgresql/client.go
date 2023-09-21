@@ -123,7 +123,7 @@ func (c *PGWriter) RunPGWriter(l log.Logger, tid int, commitSecs int, commitRows
 	period := commitSecs * 1000
 	var err error
 	var parser [20]PGParser
-	c.DB, err = pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	c.DB, err = pgx.Connect(context.Background(), GetDbUrl())
 	if err != nil {
 		level.Error(c.logger).Log("err", err)
 		os.Exit(1)
@@ -216,15 +216,31 @@ type Client struct {
 	cfg    *Config
 }
 
+func GetDbUrl() string {
+
+	var dbString = os.Getenv("DATABASE_URL")
+	if len(dbString ) > 0 {
+		return dbString
+	}
+
+	var tlsString = ""
+	if os.Getenv("DB_USE_TLS") == "true" {
+		tlsString = "sslmode=require"
+	}
+
+	return fmt.Sprintf("user=%s password=%s host=%s  port=%s database=%s %s", os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"), tlsString)
+}
+
 // NewClient creates a new PostgreSQL client
 func NewClient(logger log.Logger, cfg *Config) *Client {
 	if logger == nil {
 		logger = log.NewNopLogger()
 	}
 
-	conn1, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	var dbUrl = GetDbUrl()
+	conn1, err := pgx.Connect(context.Background(), dbUrl)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error: Unable to connect to database using DATABASE_URL=", os.Getenv("DATABASE_URL"), "Error() ", err.Error())
+		fmt.Fprintln(os.Stderr, "Error: Unable to connect to database using DATABASE_URL=", dbUrl, "Error() ", err.Error())
 
 		os.Exit(1)
 	}

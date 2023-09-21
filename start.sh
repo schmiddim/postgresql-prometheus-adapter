@@ -1,10 +1,15 @@
 #!/bin/bash
 
-if [[ "${DATABASE_URL}" == "" ]]; then
-  echo 'Missing DATABASE_URL'
-  echo 'example -e DATABASE_URL="user=<db user> password=<db user password> host=<db host> port=<db port> database=<db name>"'
-  exit 1
-fi
+
+
+export DB_USER=postgres
+export DB_PASSWORD=postgres
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_NAME=postgres
+export DB_USE_TLS=false
+
+
 
 trap shutdown INT
 
