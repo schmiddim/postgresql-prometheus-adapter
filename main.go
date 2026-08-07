@@ -41,9 +41,6 @@ import (
 
 	//"github.com/jamiealquiza/envy"
 
-	"github.com/prometheus/common/promlog"
-	"github.com/prometheus/common/promlog/flag"
-
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/prometheus/prompb"
@@ -62,9 +59,9 @@ type config struct {
 	telemetryPath      string
 	pgPrometheusConfig postgresql.Config
 	logLevel           string
+	logFormat          string
 	haGroupLockId      int
 	prometheusTimeout  time.Duration
-	promlogConfig      promlog.Config
 }
 
 const (
@@ -115,6 +112,31 @@ var (
 
 var worker [maxBgWriter]postgresql.PGWriter
 
+func buildLogger(levelStr, formatStr string) log.Logger {
+	var l log.Logger
+	if formatStr == "json" {
+		l = log.NewJSONLogger(log.NewSyncWriter(os.Stderr))
+	} else {
+		l = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
+	}
+
+	switch levelStr {
+	case "debug":
+		l = level.NewFilter(l, level.AllowDebug())
+	case "info":
+		l = level.NewFilter(l, level.AllowInfo())
+	case "warn":
+		l = level.NewFilter(l, level.AllowWarn())
+	case "error":
+		l = level.NewFilter(l, level.AllowError())
+	default:
+		l = level.NewFilter(l, level.AllowInfo())
+	}
+
+	l = log.With(l, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
+	return l
+}
+
 func init() {
 	prometheus.MustRegister(receivedSamples)
 	prometheus.MustRegister(sentSamples)
@@ -125,7 +147,7 @@ func init() {
 
 func main() {
 	cfg := parseFlags()
-	logger := promlog.New(&cfg.promlogConfig)
+	logger := buildLogger(cfg.logLevel, cfg.logFormat)
 	level.Info(logger).Log("config", fmt.Sprintf("%+v", cfg))
 	level.Info(logger).Log("pgPrometheusConfig", fmt.Sprintf("%+v", cfg.pgPrometheusConfig))
 
@@ -192,13 +214,15 @@ func parseFlags() *config {
 	a.HelpFlag.Short('h')
 
 	cfg := &config{
-		promlogConfig: promlog.Config{},
+		logLevel:  "info",
+		logFormat: "logfmt",
 	}
 
 	a.Flag("adapter-send-timeout", "The timeout to use when sending samples to the remote storage.").Default("30s").DurationVar(&cfg.remoteTimeout)
 	a.Flag("web-listen-address", "Address to listen on for web endpoints.").Default(":9201").StringVar(&cfg.listenAddr)
 	a.Flag("web-telemetry-path", "Address to listen on for web endpoints.").Default("/metrics").StringVar(&cfg.telemetryPath)
-	flag.AddFlags(a, &cfg.promlogConfig)
+	a.Flag("log.level", "Log level (debug, info, warn, error)").Default("info").StringVar(&cfg.logLevel)
+	a.Flag("log.format", "Log format (logfmt, json)").Default("logfmt").StringVar(&cfg.logFormat)
 	
 
 	a.Flag("pg-partition", "daily or hourly partitions, default: hourly").Default("hourly").StringVar(&cfg.pgPrometheusConfig.PartitionScheme)
